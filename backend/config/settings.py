@@ -156,6 +156,8 @@ STATIC_URL = "static/"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
 }
 
 SPECTACULAR_SETTINGS = {
@@ -163,4 +165,9 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API de gestion de pharmacie — Développé avec les standards SMARTHOLOL",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+        {"name": "Médicaments", "description": "Catalogue et alertes de stock"},
+        {"name": "Catégories", "description": "Catégories de médicaments"},
+        {"name": "Ventes", "description": "Ventes et annulations"},
+    ],
 }

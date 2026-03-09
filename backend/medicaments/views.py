@@ -1,4 +1,5 @@
 from django.db import models
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,6 +8,22 @@ from .models import Medicament
 from .serializers import MedicamentSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Médicaments"],
+        summary="Liste des médicaments",
+        description="Liste paginée des médicaments actifs. Filtres : search (nom, dci), categorie (id).",
+    ),
+    retrieve=extend_schema(tags=["Médicaments"], summary="Détail d'un médicament"),
+    create=extend_schema(tags=["Médicaments"], summary="Créer un médicament"),
+    update=extend_schema(tags=["Médicaments"], summary="Modifier un médicament"),
+    partial_update=extend_schema(tags=["Médicaments"], summary="Modification partielle"),
+    destroy=extend_schema(
+        tags=["Médicaments"],
+        summary="Supprimer (soft delete)",
+        description="Désactive le médicament (est_actif=False) sans le supprimer.",
+    ),
+)
 class MedicamentViewSet(viewsets.ModelViewSet):
     """
     ViewSet permettant de gérer les médicaments.
@@ -41,12 +58,16 @@ class MedicamentViewSet(viewsets.ModelViewSet):
         instance.est_actif = False
         instance.save(update_fields=["est_actif"])
 
+    @extend_schema(
+        tags=["Médicaments"],
+        summary="Médicaments en alerte de stock",
+        description="Retourne les médicaments dont le stock actuel est inférieur ou égal au seuil minimum.",
+    )
     @action(detail=False, methods=["get"], url_path="alertes")
     def alertes_stock(self, request):
         """
         Retourne les médicaments dont le stock est inférieur ou égal au stock minimum.
         """
-
         queryset = self.get_queryset().filter(stock_actuel__lte=models.F("stock_minimum"))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

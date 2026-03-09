@@ -1,4 +1,5 @@
 from django.db.models import F
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,6 +10,23 @@ from .models import LigneVente, Vente
 from .serializers import VenteListSerializer, VenteSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Ventes"],
+        summary="Historique des ventes",
+        description="Liste paginée des ventes. Filtres : date_from, date_to (format AAAA-MM-JJ).",
+    ),
+    retrieve=extend_schema(tags=["Ventes"], summary="Détail d'une vente"),
+    create=extend_schema(
+        tags=["Ventes"],
+        summary="Enregistrer une vente",
+        description="Crée une vente avec ses lignes. Déduit automatiquement les quantités du stock. "
+        "Chaque ligne doit contenir medicament (id) et quantite.",
+    ),
+    update=extend_schema(tags=["Ventes"], summary="Modifier une vente"),
+    partial_update=extend_schema(tags=["Ventes"], summary="Modification partielle"),
+    destroy=extend_schema(tags=["Ventes"], summary="Supprimer une vente"),
+)
 class VenteViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les ventes.
@@ -34,6 +52,16 @@ class VenteViewSet(viewsets.ModelViewSet):
             qs = qs.filter(date_vente__date__lte=date_to)
         return qs
 
+    @extend_schema(
+        tags=["Ventes"],
+        summary="Annuler une vente",
+        description="Réintègre les quantités dans le stock et passe le statut à Annulée. "
+        "Retourne 400 si la vente est déjà annulée.",
+        responses={
+            200: VenteSerializer,
+            400: {"description": "Vente déjà annulée"},
+        },
+    )
     @action(detail=True, methods=["post"], url_path="annuler")
     def annuler(self, request, pk=None):
         """
