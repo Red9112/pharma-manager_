@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Categorie
+
+
+@admin.register(Categorie)
+class CategorieAdmin(admin.ModelAdmin):
+    list_display = ("nom", "date_creation")
+    search_fields = ("nom",)
+    ordering = ("nom",)
+

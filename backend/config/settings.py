@@ -11,11 +11,17 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+from decouple import Config, RepositoryEnv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Charger .env depuis backend/ pour éviter les soucis de CWD
+_env_file = BASE_DIR / ".env"
+config = Config(RepositoryEnv(str(_env_file))) if _env_file.exists() else Config()
+
+# Primary key type for models (évite le warning W042)
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -80,14 +86,34 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+def _load_db_from_env():
+    """Lit les variables DB depuis .env avec nettoyage strict (évite \\r, guillemets, espaces)."""
+    env_path = BASE_DIR / ".env"
+    mapping = {"DB_NAME": "NAME", "DB_USER": "USER", "DB_PASSWORD": "PASSWORD", "DB_HOST": "HOST", "DB_PORT": "PORT"}
+    result = {"NAME": "pharma_db", "USER": "postgres", "PASSWORD": "password", "HOST": "127.0.0.1", "PORT": "5432"}
+    if not env_path.exists():
+        return result
+    with open(env_path, "r", encoding="utf-8-sig") as f:
+        for line in f:
+            line = line.strip().replace("\r", "").replace("\n", "")
+            if "=" in line and not line.startswith("#"):
+                key, _, val = line.partition("=")
+                key = key.strip()
+                val = val.strip().strip('"').strip("'")
+                if key in mapping:
+                    result[mapping[key]] = val
+    return result
+
+_db_env = _load_db_from_env()
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="pharma_db"),
-        "USER": config("DB_USER", default="postgres"),
-        "PASSWORD": config("DB_PASSWORD", default="password"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+        "NAME": _db_env["NAME"],
+        "USER": _db_env["USER"],
+        "PASSWORD": _db_env["PASSWORD"],
+        "HOST": _db_env["HOST"],
+        "PORT": _db_env["PORT"],
     }
 }
 

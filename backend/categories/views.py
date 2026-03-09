@@ -1,3 +1,16 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+from .models import Categorie
+from .serializers import CategorieSerializer
+
+
+class CategorieViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet permettant de gérer les catégories de médicaments.
+
+    Fournit un CRUD complet sur le modèle Categorie.
+    """
+
+    queryset = Categorie.objects.all().order_by("nom")
+    serializer_class = CategorieSerializer
+
