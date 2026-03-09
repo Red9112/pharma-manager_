@@ -1,42 +1,253 @@
-#root {
-  max-width: 1280px;
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+.nav a {
+  color: #aaa;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+.nav a:hover {
+  color: #fff;
+}
+.nav a.active {
+  color: #646cff;
+  background: rgba(100, 108, 255, 0.15);
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.page {
+  max-width: 1200px;
   margin: 0 auto;
+}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.page-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.filters input[type="search"],
+.filters select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  min-width: 200px;
+}
+
+.btn-primary {
+  background: #646cff;
+  color: #fff;
+  border: none;
+}
+.btn-primary:hover {
+  background: #535bf2;
+}
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+}
+.btn-danger {
+  background: #c00;
+  color: #fff;
+  border: none;
+}
+.btn-danger:hover {
+  background: #a00;
+}
+
+.count {
+  margin-bottom: 0.75rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th,
+.data-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+.data-table th {
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.2);
+}
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.badge-warning {
+  background: #b8860b;
+  color: #000;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
   padding: 2rem;
-  text-align: center;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #333;
+  border-top-color: #646cff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+.error-message {
+  padding: 1rem;
+  background: rgba(200, 0, 0, 0.15);
+  border: 1px solid #c00;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+.error-message p {
+  margin: 0 0 0.5rem 0;
+}
+.error-message button {
+  padding: 0.4rem 0.8rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #242424;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+}
+
+.medicament-form .form-row {
+  margin-bottom: 1rem;
+}
+.medicament-form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+.medicament-form input[type="text"],
+.medicament-form input[type="number"],
+.medicament-form input[type="date"],
+.medicament-form select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  box-sizing: border-box;
+}
+.medicament-form .form-row.checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.medicament-form .form-row.checkbox input {
+  width: auto;
+}
+.medicament-form .form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.medicament-form .form-actions button {
+  padding: 0.5rem 1rem;
+}
+
+@media (prefers-color-scheme: light) {
+  .nav {
+    background: #f0f0f0;
+    border-bottom-color: #ddd;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  .nav a {
+    color: #333;
+  }
+  .nav a:hover {
+    color: #000;
+  }
+  .nav a.active {
+    color: #535bf2;
+    background: rgba(100, 108, 255, 0.12);
+  }
+  .filters input[type="search"],
+  .filters select {
+    border-color: #ccc;
+  }
+  .data-table th,
+  .data-table td {
+    border-bottom-color: #ddd;
+  }
+  .data-table th {
+    background: #f5f5f5;
+  }
+  .data-table tbody tr:hover {
+    background: #fafafa;
+  }
+  .modal {
+    background: #fff;
+    border-color: #ddd;
+  }
+  .medicament-form input[type="text"],
+  .medicament-form input[type="number"],
+  .medicament-form input[type="date"],
+  .medicament-form select {
+    border-color: #ccc;
+  }
 }
