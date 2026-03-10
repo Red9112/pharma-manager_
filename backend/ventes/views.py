@@ -1,11 +1,15 @@
+import csv
 from django.db.models import F
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+import django_filters
 from medicaments.models import Medicament
 
+from .filters import VenteFilter
 from .models import LigneVente, Vente
 from .serializers import VenteListSerializer, VenteSerializer
 
@@ -36,6 +40,7 @@ class VenteViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Vente.objects.all().prefetch_related("lignes", "lignes__medicament")
+    filterset_class = VenteFilter
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -43,14 +48,7 @@ class VenteViewSet(viewsets.ModelViewSet):
         return VenteSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        date_from = self.request.query_params.get("date_from")
-        date_to = self.request.query_params.get("date_to")
-        if date_from:
-            qs = qs.filter(date_vente__date__gte=date_from)
-        if date_to:
-            qs = qs.filter(date_vente__date__lte=date_to)
-        return qs
+        return super().get_queryset()
 
     @extend_schema(
         tags=["Ventes"],
@@ -82,3 +80,26 @@ class VenteViewSet(viewsets.ModelViewSet):
         vente.save(update_fields=["statut"])
         serializer = self.get_serializer(vente)
         return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Ventes"],
+        summary="Export CSV ventes",
+        description="Exporte la liste des ventes (avec filtres date) en CSV.",
+    )
+    @action(detail=False, methods=["get"], url_path="export-csv")
+    def export_csv(self, request):
+        """Exporte les ventes en CSV."""
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="ventes.csv"'
+        response.write("\ufeff")
+        writer = csv.writer(response, delimiter=";")
+        writer.writerow(["Référence", "Date", "Total TTC", "Statut", "Notes"])
+        for v in self.filter_queryset(self.get_queryset()):
+            writer.writerow([
+                v.reference,
+                v.date_vente.strftime("%Y-%m-%d %H:%M") if v.date_vente else "",
+                v.total_ttc,
+                v.get_statut_display() if hasattr(v, "get_statut_display") else v.statut,
+                (v.notes or "")[:200],
+            ])
+        return response

@@ -96,10 +96,31 @@ Swagger UI : **http://localhost:8000/api/schema/swagger-ui/**
 
 Schéma OpenAPI : **http://localhost:8000/api/schema/**
 
+## Lancer avec Docker Compose
+
+Pour démarrer la base PostgreSQL et le backend en une commande :
+
+```bash
+docker-compose up --build
+```
+
+- API : http://localhost:8000
+- Swagger : http://localhost:8000/api/schema/swagger-ui/
+- La base `pharma_db` est créée automatiquement ; les migrations sont exécutées au démarrage du backend.
+
+Le frontend reste à lancer en local : `cd frontend && npm run dev` (avec `VITE_API_BASE_URL=http://localhost:8000/api/v1`).
+
 ## Structure du projet
 
 - `backend/` — Projet Django (config, apps medicaments, ventes, categories)
 - `frontend/` — Application React (Vite), pages Dashboard, Médicaments, Ventes
+
+## Bonus (Section H)
+
+- **Tests unitaires** : `cd backend && python manage.py test`
+- **Export CSV** : `GET /api/v1/medicaments/export-csv/`, `GET /api/v1/ventes/export-csv/`
+- **Filtres avancés** : `django-filter` sur médicaments (categorie) et ventes (statut, date_from, date_to)
+- **Docker Compose** : voir ci-dessus
 
 ## Livrables
 

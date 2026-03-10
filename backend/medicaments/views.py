@@ -1,9 +1,13 @@
+import csv
+import django_filters
 from django.db import models
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .filters import MedicamentFilter
 from .models import Medicament
 from .serializers import MedicamentSerializer
 
@@ -34,21 +38,15 @@ class MedicamentViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = MedicamentSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = MedicamentFilter
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     search_fields = ["nom", "dci"]
     ordering_fields = ["nom", "stock_actuel", "date_creation"]
     ordering = ["nom"]
 
     def get_queryset(self):
-        """
-        Retourne uniquement les médicaments actifs par défaut.
-        """
-
-        queryset = Medicament.objects.filter(est_actif=True)
-        categorie_id = self.request.query_params.get("categorie")
-        if categorie_id:
-            queryset = queryset.filter(categorie_id=categorie_id)
-        return queryset
+        """Retourne les médicaments actifs (filtre categorie via filterset_class)."""
+        return Medicament.objects.filter(est_actif=True)
 
     def perform_destroy(self, instance):
         """
@@ -71,4 +69,34 @@ class MedicamentViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(stock_actuel__lte=models.F("stock_minimum"))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Médicaments"],
+        summary="Export CSV inventaire",
+        description="Exporte la liste des médicaments (actifs) en CSV.",
+    )
+    @action(detail=False, methods=["get"], url_path="export-csv")
+    def export_csv(self, request):
+        """Exporte l'inventaire des médicaments en CSV."""
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="inventaire_medicaments.csv"'
+        response.write("\ufeff")  # BOM UTF-8 pour Excel
+        writer = csv.writer(response, delimiter=";")
+        writer.writerow(
+            ["Nom", "DCI", "Catégorie", "Forme", "Dosage", "Prix achat", "Prix vente", "Stock", "Stock min", "Date expiration"]
+        )
+        for m in self.get_queryset().select_related("categorie"):
+            writer.writerow([
+                m.nom,
+                m.dci or "",
+                m.categorie.nom,
+                m.forme,
+                m.dosage,
+                m.prix_achat,
+                m.prix_vente,
+                m.stock_actuel,
+                m.stock_minimum,
+                m.date_expiration,
+            ])
+        return response
 
