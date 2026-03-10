@@ -11,31 +11,21 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEmpty, RepositoryEnv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Charger .env depuis backend/ pour éviter les soucis de CWD
+# Load .env from backend/ when present. If absent (e.g. Docker), use empty repository.
 _env_file = BASE_DIR / ".env"
-config = Config(RepositoryEnv(str(_env_file))) if _env_file.exists() else Config()
+config = (
+    Config(RepositoryEnv(str(_env_file))) if _env_file.exists() else Config(RepositoryEmpty())
+)
 
-# Primary key type for models (évite le warning W042)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY", default="insecure-secret-key-change-me")
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
-
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split() if not DEBUG else ["*"]
-
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -59,53 +49,71 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
-    },
+    }
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 def _load_db_from_env():
-    """Lit les variables DB depuis .env avec nettoyage strict (évite \\r, guillemets, espaces)."""
+    """Read DB vars from .env and os.environ (Docker). os.environ has priority."""
+
+    import os
+
+    mapping = {
+        "DB_NAME": "NAME",
+        "DB_USER": "USER",
+        "DB_PASSWORD": "PASSWORD",
+        "DB_HOST": "HOST",
+        "DB_PORT": "PORT",
+    }
+    result = {
+        "NAME": "pharma_db",
+        "USER": "postgres",
+        "PASSWORD": "password",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+    }
+
     env_path = BASE_DIR / ".env"
-    mapping = {"DB_NAME": "NAME", "DB_USER": "USER", "DB_PASSWORD": "PASSWORD", "DB_HOST": "HOST", "DB_PORT": "PORT"}
-    result = {"NAME": "pharma_db", "USER": "postgres", "PASSWORD": "password", "HOST": "127.0.0.1", "PORT": "5432"}
-    if not env_path.exists():
-        return result
-    with open(env_path, "r", encoding="utf-8-sig") as f:
-        for line in f:
-            line = line.strip().replace("\r", "").replace("\n", "")
-            if "=" in line and not line.startswith("#"):
-                key, _, val = line.partition("=")
-                key = key.strip()
-                val = val.strip().strip('"').strip("'")
-                if key in mapping:
-                    result[mapping[key]] = val
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8-sig") as f:
+            for line in f:
+                line = line.strip().replace("\r", "").replace("\n", "")
+                if "=" in line and not line.startswith("#"):
+                    key, _, val = line.partition("=")
+                    key = key.strip()
+                    val = val.strip().strip('"').strip("'")
+                    if key in mapping:
+                        result[mapping[key]] = val
+
+    for env_key, db_key in mapping.items():
+        if env_key in os.environ:
+            result[db_key] = os.environ[env_key].strip().strip('"').strip("'")
+
     return result
+
 
 _db_env = _load_db_from_env()
 
@@ -120,40 +128,17 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
 
@@ -166,18 +151,19 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "PharmaManager API",
-    "DESCRIPTION": "API de gestion de pharmacie — Développé avec les standards SMARTHOLOL",
+    "DESCRIPTION": "API de gestion de pharmacie - Developpe avec les standards SMARTHOLOL",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "TAGS": [
-        {"name": "Médicaments", "description": "Catalogue et alertes de stock"},
-        {"name": "Catégories", "description": "Catégories de médicaments"},
+        {"name": "Medicaments", "description": "Catalogue et alertes de stock"},
+        {"name": "Categories", "description": "Categories de medicaments"},
         {"name": "Ventes", "description": "Ventes et annulations"},
     ],
 }
 
-# CORS : autoriser le frontend (Vite sur 5173) en dev
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
