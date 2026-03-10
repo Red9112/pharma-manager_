@@ -1,0 +1,10 @@
+venv/
+env/
+__pycache__/
+*.pyc
+.git/
+*.sqlite3
+.env
+*.log
+.pytest_cache/
+.mypy_cache/
