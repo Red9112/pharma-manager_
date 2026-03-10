@@ -10,10 +10,11 @@ Application de gestion de pharmacie — Développée dans le cadre du test techn
 
 ## Prérequis
 
-- Python 3.10+
-- Node.js 18+
-- PostgreSQL (ou Docker pour lancer une base locale)
-- Optionnel : Docker pour PostgreSQL
+- **Option 1 (recommandée) : Docker Desktop** (lance db + backend + frontend)
+- **Option 2 : installation locale**
+  - Python 3.10+
+  - Node.js 18+
+  - PostgreSQL (ou Docker pour lancer une base locale)
 
 ### Lancer PostgreSQL avec Docker
 
@@ -98,17 +99,26 @@ Schéma OpenAPI : **http://localhost:8000/api/schema/**
 
 ## Lancer avec Docker Compose
 
-Pour démarrer la base PostgreSQL et le backend en une commande :
+Pour démarrer **PostgreSQL + Backend + Frontend** en une commande :
 
 ```bash
 docker-compose up --build
 ```
 
-- API : http://localhost:8000
-- Swagger : http://localhost:8000/api/schema/swagger-ui/
+- **Frontend (UI)** : http://localhost:3000
+- **API** : http://localhost:8000
+- **Swagger** : http://localhost:8000/api/schema/swagger-ui/
 - La base `pharma_db` est créée automatiquement ; les migrations sont exécutées au démarrage du backend.
 
-Le frontend reste à lancer en local : `cd frontend && npm run dev` (avec `VITE_API_BASE_URL=http://localhost:8000/api/v1`).
+Notes :
+- Le frontend est servi par **Nginx** dans le conteneur `frontend` (port 3000).
+- `VITE_API_BASE_URL` est injecté au build du frontend via `docker-compose.yml` (par défaut `http://localhost:8000/api/v1`).
+
+Arrêter les conteneurs :
+
+```bash
+docker-compose down
+```
 
 ## Structure du projet
 

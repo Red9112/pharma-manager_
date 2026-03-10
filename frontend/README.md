@@ -4,6 +4,18 @@ Application React (Vite) pour l’interface PharmaManager.
 
 ## Démarrage rapide
 
+### Option Docker Compose (UI via Nginx)
+
+Depuis la racine du projet :
+
+```bash
+docker-compose up --build
+```
+
+Interface : http://localhost:3000
+
+### Option locale (Vite)
+
 ```bash
 npm install
 cp .env.example .env
