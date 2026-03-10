@@ -52,11 +52,17 @@
   margin-bottom: 1rem;
 }
 .filters input[type="search"],
-.filters select {
+.filters select,
+.filters input[type="date"] {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   border: 1px solid #444;
   min-width: 200px;
+}
+.filters label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-primary {
@@ -117,6 +123,14 @@
 .badge-warning {
   background: #b8860b;
   color: #000;
+}
+.badge-info {
+  background: #4a6fa5;
+  color: #fff;
+}
+.badge-danger {
+  background: #c00;
+  color: #fff;
 }
 
 .loading-spinner {
@@ -211,6 +225,74 @@
   padding: 0.5rem 1rem;
 }
 
+.dashboard-cards {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.card-stat {
+  flex: 1;
+  min-width: 160px;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #333;
+  border-radius: 8px;
+  text-align: center;
+}
+.card-stat .card-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #646cff;
+}
+.card-stat .card-label {
+  font-size: 0.9rem;
+  color: #888;
+}
+.card-stat.card-alert .card-value {
+  color: #b8860b;
+}
+
+.vente-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  box-sizing: border-box;
+}
+.vente-form .form-section {
+  margin: 1rem 0;
+}
+.vente-form .form-row.head {
+  display: grid;
+  grid-template-columns: 1fr 100px 80px;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.vente-form .form-row.ligne {
+  display: grid;
+  grid-template-columns: 1fr 100px 80px;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.vente-form .form-row.ligne select,
+.vente-form .form-row.ligne input {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+.vente-form .col-action { min-width: 80px; }
+.btn-add-line {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+.modal-wide {
+  max-width: 640px;
+}
+
 @media (prefers-color-scheme: light) {
   .nav {
     background: #f0f0f0;
@@ -227,7 +309,17 @@
     background: rgba(100, 108, 255, 0.12);
   }
   .filters input[type="search"],
-  .filters select {
+  .filters select,
+  .filters input[type="date"] {
+    border-color: #ccc;
+  }
+  .card-stat {
+    background: #f5f5f5;
+    border-color: #ddd;
+  }
+  .vente-form textarea,
+  .vente-form .form-row.ligne select,
+  .vente-form .form-row.ligne input {
     border-color: #ccc;
   }
   .data-table th,
